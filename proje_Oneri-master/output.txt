@@ -1,0 +1,11 @@
+'G.O.R.A.' için En İyi 10 Tavsiye Film:
+D.E.B.S.,Action, Comedy, Romance            ,Angela Robinson,1.0,
+Saw,Horror, Mystery, Thriller            ,James Wan,0.5139705460669728,
+Miracle,Biography, Drama, History            ,Gavin O'Connor,0.5089718737845961,
+The I Inside,Mystery, Sci-Fi, Thriller            ,Roland Suso Richter,0.4874617379691934,
+Shrek 2,Animation, Adventure, Comedy            ,Andrew Adamson,0.4825107677421088,
+Criminal,Comedy, Crime, Drama            ,Gregory Jacobs,0.4825107677421088,
+Birth,Drama, Fantasy, Mystery            ,Jonathan Glazer,0.4825107677421088,
+Collateral,Action, Crime, Drama            ,Michael Mann,0.47306698005001585,
+I, Robot,Action, Mystery, Sci-Fi            ,Alex Proyas,0.47306698005001585,
+Hellboy,Action, Adventure, Fantasy            ,Guillermo del Toro,0.47306698005001585,
