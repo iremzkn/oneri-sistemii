@@ -24,56 +24,71 @@ selected_features = input("Benzerlik hesaplamak için özellikleri girin (örne�
 
 # Kullanıcının seçtiği özelliklere göre 'combined_features' sütununu oluştur
 data['combined_features'] = data.apply(lambda row: create_combined_features(row, selected_features), axis=1)
+combined_features= data['combined_features']
 
-# Birleştirilmiş özellikleri vektörleştir
-vectorizer = CountVectorizer(binary=True)
-tfidf_matrix = vectorizer.fit_transform(data['combined_features'])
+two_letter_list= []
 
-# Jaccard benzerliği hesapla
-jaccard_sim = pairwise_distances(tfidf_matrix.toarray(), metric='jaccard')
+# 'combined_features' sütununun satırlarını tek tek gez
+for index, value in combined_features.items():
+    # sütunları ikişer harflik bigramlara ayır
+    value= value.strip() #boşlukları sil
+    two_letter_bigrams = [(value[i:i+2]) for i in range(0, len(value)-1, 1)]
+    two_letter_list.append(two_letter_bigrams) #listeye ekle (liste olarak)
 
-
-# Kullanıcının girdiği film başlığına göre film önerilerini almak için fonksiyon
-def get_movie_recommendations(title, top_n=10):
-    if secim == 1:
-        index = data[data['title'] == title].index[0]
-    elif secim == 2:
-        index = data[data['isim'] == title].index[0]
-    elif secim == 3:
-        index = data[data['numara'] == int(title)].index[0]
-
-    similarity_scores = list(enumerate(jaccard_sim[index]))
-    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=False) 
-    top_recommendations = similarity_scores[1:top_n + 1]
-
-    data1 = 'title' if secim == 1 else 'isim' if secim == 2 else 'isim'
-    data2 = 'genre' if secim == 1 else 'tur' if secim == 2 else 'firma'
-    data3 = 'director' if secim == 1 else 'yazar' if secim == 2 else 'numara'
-
-    recommended = [[data[data1][top_data[0]], data[data2][top_data[0]], data[data3][top_data[0]]] for top_data in top_recommendations]
-    return recommended, [score[1] for score in top_recommendations]
+#########################################################   
+#print("value değeri============> \n" , two_letter_list[9998])
 
 # Kullanıcıdan film başlığı girdisi al
-title = input("Aradığınızı Girin: ")
+title = input("Aradığınızı Girin: ").lower().strip()
 
-# Kullanıcının girdisine göre film önerilerini al
-recommendations, similarity_scores = get_movie_recommendations(title, top_n=10)
+# 'title' sütununu küçük harfe dönüştürerek ve boşlukları temizleyerek kontrol et
+matching_row = str(data[data['title'].str.lower().str.strip() == title][selected_features])
+matching_row=matching_row.strip()
+seçilmis_bigrams = [(matching_row[i:i+2]) for i in range(0, len(matching_row)-1, 1)]
 
-# Sonuçları çiz ve göster
-plt.figure(figsize=(10, 6))
-plt.barh(range(len(recommendations)), similarity_scores)
-plt.xlabel('Jaccard Benzerliği')
-plt.ylabel('Film Başlığı')
-plt.title(f"'{title}' için Jaccard Benzerliğine Göre En İyi 10 Tavsiye Film")
-plt.tight_layout()
-plt.show()
+#############################################################
+#print("seçilmiş bigrams=============> ", seçilmis_bigrams)
+jac_degerleri= []
+for index, film_bigrams in enumerate(two_letter_list):
+    # Ortak bigramları bul
+    common_bigrams = set(seçilmis_bigrams) & set(film_bigrams)
+    
+    #jaccard benzerlik değerini hesaplama
+    toplam= (len(two_letter_list[index]))+ (len(seçilmis_bigrams))
+    jaccard_degeri= len(common_bigrams)/ toplam
+    #jaccard degerlerini bir listede toplama
+    jac_degerleri.append(jaccard_degeri)
 
-# Tavsiyeleri bir metin dosyasına yaz
-output_file = 'output.txt'
-with open(output_file, 'w', encoding='utf-8') as file:
-    file.write(f"'{title}' için En İyi 10 Tavsiye Film:\n")
-    i = 0
-    for sonuc in recommendations:
-        file.write(str(sonuc[0]) + ',' + str(sonuc[1]) + ',' + str(sonuc[2]) + ',' + str(similarity_scores[i]) + ',' + '\n')
-        i = i + 1
-print(f"'{title}' için önerilen filmler '{output_file}' dosyasına yazıldı.")
+#en yüksek jaccard degerlerini veren fonksiyon
+def en_buyuk_10_jaccard_degerleri(jac_degerleri):
+    # Enumerate ile indeks ve değerleri bir arada al
+    indeks_ve_degerler = list(enumerate(jac_degerleri))
+    
+    # Değerlere göre sırala (büyükten küçüğe)
+    sirali_liste = sorted(indeks_ve_degerler, key=lambda x: x[1], reverse=True)
+    
+    # İlk 10 değeri ve sıralarını al
+    en_buyuk_10 = sirali_liste[:10]
+    
+    # Sadece indeksleri ve değerleri döndür
+    indeksler = [indeks for indeks, deger in en_buyuk_10]
+    degerler = [deger for indeks, deger in en_buyuk_10]
+    
+    return indeksler, degerler
+
+# Fonksiyonu kullanarak en büyük 10 değeri ve sıralarını al
+en_buyuk_indeksler, en_buyuk_degerler = en_buyuk_10_jaccard_degerleri(jac_degerleri)
+
+# Sonuçları yazdır
+print("En büyük 10 Jaccard Değeri İndeksleri:", en_buyuk_indeksler)
+print("En büyük 10 Jaccard Değerleri:", en_buyuk_degerler)
+
+print("en benzer 10 veri: ")
+
+
+# İlgili satır ve sütundaki veriye erişim
+veri=data.iloc[int(en_buyuk_indeksler[0])]
+
+print(veri.iloc[0])
+
+
